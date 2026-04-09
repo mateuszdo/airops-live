@@ -36,3 +36,17 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 This time I wanted to create a live ground handling operations dashboard and model it on actual turnaround workflow (gate assignement, aircraft status, handler dispatch). It will also include KPI breach alert state (flight turning amber or red when it's behind the schedule).
+
+## Stack
+
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS v4
+- Recharts
+- next-themes
+
+## How it works
+
+There's no backend — all flight data is mocked and driven by a `setInterval` hook that ticks every 5 seconds. Flights advance through their lifecycle automatically (ON TIME → BOARDING → DEPARTED), turnaround times increment in real time, and any flight that exceeds its KPI target gets flagged immediately.
+
+The idea was to make it easy to swap the mock data hook for a real WebSocket or API call without touching any of the components.
