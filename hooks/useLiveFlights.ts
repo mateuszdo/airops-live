@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MOCK_FLIGHTS, CARRIER_KPI_DATA } from "@/lib/mockData";
-import { Flight, DashboardStats, CarrierKpi } from "@/lib/types";
+import { generateFlights, CARRIER_KPI_DATA } from "@/lib/mockData";
+import { Flight, DashboardStats, CarrierKpi, FlightStatus } from "@/lib/types";
 
 function computeStats(flights: Flight[]): DashboardStats {
   const active = flights.filter((f) => f.status !== "CANCELLED");
@@ -31,36 +31,59 @@ function computeStats(flights: Flight[]): DashboardStats {
   };
 }
 
+function deriveStatus(flight: Flight): FlightStatus {
+  if (flight.status === "CANCELLED") return "CANCELLED";
+  if (flight.status === "ARRIVED") return "ARRIVED";
+  if (flight.status === "DEPARTED") return "DEPARTED";
+
+  const { elapsedMinutes, turnaroundMinutes } = flight;
+
+  if (elapsedMinutes === 0) return "ON_TIME";
+  if (elapsedMinutes > turnaroundMinutes) return "DELAYED";
+  if (elapsedMinutes >= turnaroundMinutes - 15) return "BOARDING";
+  return "ON_TIME";
+}
+
 function tickFlights(flights: Flight[]): Flight[] {
+  const nowTime = new Date().toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/London",
+  });
+
   return flights.map((flight) => {
-    if (flight.status === "CANCELLED" || flight.status === "DEPARTED")
+    if (
+      flight.status === "CANCELLED" ||
+      flight.status === "DEPARTED" ||
+      flight.status === "ARRIVED"
+    )
       return flight;
 
     const newElapsed = flight.elapsedMinutes + 1;
     const kpiBreached = newElapsed > flight.turnaroundMinutes;
-
-    // Automatically advance status based on elapsed time
-    let newStatus = flight.status;
-    if (flight.status === "ON_TIME" && newElapsed > 10) newStatus = "BOARDING";
-    if (flight.status === "BOARDING" && newElapsed >= flight.turnaroundMinutes)
-      newStatus = "DEPARTED";
+    const newStatus = deriveStatus({ ...flight, elapsedMinutes: newElapsed });
+    const justDeparted = newStatus === "DEPARTED" && !flight.atd;
 
     return {
       ...flight,
       elapsedMinutes: newElapsed,
       kpiBreached,
       status: newStatus,
+      atd: justDeparted ? nowTime : flight.atd,
+      delayMinutes: justDeparted
+        ? Math.max(0, newElapsed - flight.turnaroundMinutes)
+        : flight.delayMinutes,
     };
   });
 }
 
 export function useLiveFlights() {
-  const [flights, setFlights] = useState<Flight[]>(MOCK_FLIGHTS);
-  const [stats, setStats] = useState<DashboardStats>(
-    computeStats(MOCK_FLIGHTS),
+  const [flights, setFlights] = useState<Flight[]>(() => generateFlights());
+  const [stats, setStats] = useState<DashboardStats>(() =>
+    computeStats(generateFlights()),
   );
   const [kpiData] = useState<CarrierKpi[]>(CARRIER_KPI_DATA);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [lastUpdated, setLastUpdated] = useState<Date>(() => new Date());
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -70,7 +93,7 @@ export function useLiveFlights() {
         setLastUpdated(new Date());
         return updated;
       });
-    }, 5000); // ticks every 5 seconds
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);

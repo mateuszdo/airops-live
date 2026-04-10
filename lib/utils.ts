@@ -45,3 +45,9 @@ export function getTurnaroundPercent(elapsed: number, target: number): number {
   if (target === 0) return 0;
   return Math.min(Math.round((elapsed / target) * 100), 100);
 }
+
+export function calcDelay(scheduled: string, actual: string): number {
+  const [sh, sm] = scheduled.split(":").map(Number);
+  const [ah, am] = actual.split(":").map(Number);
+  return ah * 60 + am - (sh * 60 + sm);
+}

@@ -24,15 +24,15 @@ export default function FlightRow({ flight }: FlightRowProps) {
       {/* Flight + Carrier */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          {flight.kpiBreached && (
-            <AlertTriangle size={13} className="text-red-400 shrink-0" />
-          )}
           <div>
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               {flight.flightNumber}
             </p>
             <p className="text-xs text-slate-500">{flight.carrier}</p>
           </div>
+          {flight.kpiBreached && (
+            <AlertTriangle size={13} className="text-red-400 shrink-0" />
+          )}
         </div>
       </td>
 
@@ -52,13 +52,37 @@ export default function FlightRow({ flight }: FlightRowProps) {
         <p className="text-xs text-slate-500">{flight.stand}</p>
       </td>
 
-      {/* Scheduled / Estimated */}
+      {/* Scheduled*/}
       <td className="px-4 py-3">
         <p className="text-sm font-mono text-slate-700 dark:text-slate-300">
           {flight.scheduledTime}
         </p>
-        {flight.estimatedTime !== flight.scheduledTime && (
-          <p className="text-xs text-amber-500">ETA {flight.estimatedTime}</p>
+      </td>
+
+      {/* ETD */}
+      <td className="px-4 py-3">
+        {flight.estimatedTime !== flight.scheduledTime ? (
+          <p className="text-sm font-mono text-amber-500">
+            {flight.estimatedTime}
+          </p>
+        ) : (
+          <span className="text-sm text-slate-400">—</span>
+        )}
+      </td>
+
+      {/* ATD */}
+      <td className="px-4 py-3">
+        {flight.atd ? (
+          <div>
+            <p className="text-sm font-mono text-slate-700 dark:text-slate-300">
+              {flight.atd}
+            </p>
+            {flight.delayMinutes !== null && flight.delayMinutes > 0 && (
+              <p className="text-xs text-red-400">+{flight.delayMinutes}m</p>
+            )}
+          </div>
+        ) : (
+          <span className="text-sm text-slate-400">—</span>
         )}
       </td>
 

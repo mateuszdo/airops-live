@@ -16,6 +16,8 @@ export interface Flight {
   destination: string;
   scheduledTime: string; // "14:35"
   estimatedTime: string; // "14:50" — may differ if delayed
+  atd: string | null; // actual time of departure, null if not departed yet
+  delayMinutes: number | null; // minutes delayed, null if not departed yet
   gate: string; // "A12"
   stand: string; // "Stand 42" — the aircraft parking position
   status: FlightStatus;
