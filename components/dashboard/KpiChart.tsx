@@ -3,11 +3,11 @@
 import {
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
@@ -90,10 +90,12 @@ export default function KpiChart({ data }: KpiChartProps) {
               fontWeight: "500",
             }}
             itemStyle={{ color: "#f1f5f9" }}
-            formatter={(value: number, name: string) => [
-              `${value} min`,
-              name === "target" ? "Target" : "Actual",
-            ]}
+            formatter={
+              ((value: number, name: string): [string, string] => [
+                `${value} min`,
+                name === "target" ? "Target" : "Actual",
+              ]) as never
+            }
           />
           <ReferenceLine y={0} stroke="#334155" />
           <Bar
@@ -102,26 +104,14 @@ export default function KpiChart({ data }: KpiChartProps) {
             radius={[4, 4, 0, 0]}
             maxBarSize={40}
           />
-          <Bar
-            dataKey="actual"
-            radius={[4, 4, 0, 0]}
-            maxBarSize={40}
-            shape={(props: any) => {
-              const { x, y, width, height, actual, target } = props;
-              const breached = actual > target;
-              return (
-                <rect
-                  x={x}
-                  y={y}
-                  width={width}
-                  height={height}
-                  fill={breached ? "#f87171" : "#34d399"}
-                  rx={4}
-                  ry={4}
-                />
-              );
-            }}
-          />
+          <Bar dataKey="actual" radius={[4, 4, 0, 0]} maxBarSize={40}>
+            {data.map((entry) => (
+              <Cell
+                key={entry.carrier}
+                fill={entry.actual > entry.target ? "#f87171" : "#34d399"}
+              />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>

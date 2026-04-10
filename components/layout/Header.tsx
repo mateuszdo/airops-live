@@ -29,13 +29,13 @@ export default function Header({ lastUpdated }: HeaderProps) {
   }, []);
 
   useEffect(() => {
-    setLastUpdatedStr(
-      lastUpdated.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
-    );
+    const str = lastUpdated.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setLastUpdatedStr(str);
   }, [lastUpdated]);
 
   return (
